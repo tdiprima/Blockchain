@@ -1,88 +1,57 @@
-# 🧱 Simple Blockchain + CryptoUtils 🔐  
-A bite-sized blockchain demo with encryption magic. Perfect for learning or tinkering.
+# Blockchain Blueprint
 
----
+A hands-on JavaScript blockchain implementation with SHA-256 proof-of-work mining and AES-192-CBC encryption — built to make core blockchain mechanics readable and testable.
 
-## ⚡️ Wait... What *is* Blockchain?
+## Why Blockchain Is Hard to Learn From
 
-Think of it like a notebook where each page (block) is glued to the previous one using a unique seal (hash). If someone tries to rip a page out and change it, the glue breaks and everyone knows it's been tampered with. That's how blockchain makes sure no one's messing with the data.
+Most blockchain tutorials either skip the cryptography entirely or bury you in framework abstractions before you understand what's actually happening under the hood. It's hard to build intuition for tamper detection, block linking, and secure data storage when the mechanics are hidden.
 
-**Each block contains:**
+## What This Does
 
-- Data (like transactions, health records, whatever)
-- A hash (digital fingerprint)
-- The hash of the previous block (chain magic)
-- A nonce (a number used to make the hash match rules — aka "mining")
+This repo implements a blockchain from scratch in plain Node.js — no frameworks, no magic. Each block stores arbitrary data, computes a SHA-256 hash over its contents, and links to the previous block's hash. A proof-of-work miner increments a nonce until the hash meets a configurable difficulty target. A separate `cryptoUtils` module handles AES-192-CBC encryption and decryption using `scrypt`-derived keys, so sensitive data (like medical records) can be stored on-chain without being readable in plaintext. The chain validates itself by re-hashing every block and verifying the hash chain — any tampering breaks validation immediately.
 
-## 🧠 What's in this Repo?
+## Example
 
-### 🧩 Core Files
-- **`blockchain.js` / `simpleBlockchain.js`** – These are your blockchain engines. Define `Block` and `Blockchain` classes.
-- **`cryptoUtils.js`** – Handles AES-192-CBC encryption/decryption of sensitive data. You can encrypt anything: patient records, passwords, your grocery list.
+```js
+const { Block, Blockchain } = require("./src/blockchain");
+const { encryptData, decryptData } = require("./src/cryptoUtils");
 
-### 🧪 Test Files
-- **`blockchain.test.js`** – Unit tests for the blockchain stuff, written using [bun](https://bun.sh/) test runner.
-- **`cryptoUtils.test.js`** – Unit test for encrypting/decrypting JSON objects.
-- **`blockchainTest.js`** – A simple demo script that adds a block and prints the whole chain.
+const chain = new Blockchain(); // difficulty: 4
 
-## 🛠 How To Use This
+const record = { patientId: "12345", diagnosis: "Common Cold" };
+const encrypted = await encryptData(JSON.stringify(record), "my-secret");
 
-### 1. 🔧 Prereqs
-You need Node.js or [Bun](https://bun.sh/) (preferably Bun if you're running the tests).
+chain.addBlock(new Block(1, Date.now(), encrypted));
+// Block mined: 0000a3f8...
 
-```bash
-# If using Node
-npm install
+console.log(chain.isChainValid()); // true
 
-# Or install Bun (if you haven't)
-curl -fsSL https://bun.sh/install | bash
+chain.chain[1].data = "tampered";
+console.log(chain.isChainValid()); // false
 ```
 
-### 2. 🚀 Run the Demo
+## Usage
+
+**Prerequisites:** Node.js or [Bun](https://bun.sh/)
+
+```bash
+npm install
+# or
+bun install
+```
+
+**Run the demo:**
 
 ```bash
 node blockchainTest.js
 ```
 
-You'll see:
-
-- A block get mined (with a valid hash)
-- Full blockchain printed out
-- Whether the chain is still valid
-
-### 3. 🧪 Run the Tests (with Bun)
+**Run the test suite (requires Bun):**
 
 ```bash
 bun test
 ```
 
-You'll get test results for:
+Tests cover hash calculation, proof-of-work mining, genesis block creation, block addition, chain validation, and tamper detection for both data and hash fields.
 
-- Hash calculation
-- Mining
-- Chain validity
-- Encryption/decryption
-
-## 🔐 Encrypting Stuff
-
-```js
-const { encryptData, decryptData } = require('./cryptoUtils');
-
-(async () => {
-  const data = JSON.stringify({ hello: "world" });
-  const key = "SuperSecret123";
-
-  const encrypted = await encryptData(data, key);
-  const decrypted = await decryptData(encrypted, key);
-
-  console.log({ encrypted, decrypted });
-})();
-```
-
-## 🧠 TL;DR
-
-- Blockchain = tamper-proof list of records 🔗
-- You mine blocks to make sure the hash is valid (starts with `0000`, etc.)
-- You can encrypt/decrypt stuff on top with `cryptoUtils.js`
-- You can test everything with Bun (`bun test`)
-- Run the demo with `node blockchainTest.js`
+<br>
