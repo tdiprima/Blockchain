@@ -1,63 +1,75 @@
 # Blockchain Blueprint
 
-A hands-on JavaScript blockchain implementation with SHA-256 proof-of-work mining and AES-192-CBC encryption — built to make core blockchain mechanics readable and testable.
+A JavaScript implementation of a blockchain with proof-of-work mining and AES-192 data encryption.
 
-## Why Blockchain Is Hard to Learn From
+## Files
 
-Most blockchain tutorials either skip the cryptography entirely or bury you in framework abstractions before you understand what's actually happening under the hood. It's hard to build intuition for tamper detection, block linking, and secure data storage when the mechanics are hidden.
+### Library modules (not runnable directly)
 
-## What This Does
+| File | Purpose |
+|------|---------|
+| `src/blockchain.js` | Core `Block` and `Blockchain` classes with SHA-256 hashing, proof-of-work mining, and chain validation. Imported by the tests and demo scripts. |
+| `src/cryptoUtils.js` | AES-192-CBC `encryptData` and `decryptData` functions with password-derived keys via `scrypt`. Imported by tests. |
+| `src/myBlockchain/simpleBlockchain.js` | A self-contained copy of the `Block` and `Blockchain` classes (no external deps beyond Node's `crypto`). Used by `blockchainTest.js`. |
 
-This repo implements a blockchain from scratch in plain Node.js — no frameworks, no magic. Each block stores arbitrary data, computes a SHA-256 hash over its contents, and links to the previous block's hash. A proof-of-work miner increments a nonce until the hash meets a configurable difficulty target. A separate `cryptoUtils` module handles AES-192-CBC encryption and decryption using `scrypt`-derived keys, so sensitive data (like medical records) can be stored on-chain without being readable in plaintext. The chain validates itself by re-hashing every block and verifying the hash chain — any tampering breaks validation immediately.
+### Runnable scripts
 
-## Example
-
-```js
-const { Block, Blockchain } = require("./src/blockchain");
-const { encryptData, decryptData } = require("./src/cryptoUtils");
-
-const chain = new Blockchain(); // difficulty: 4
-
-const record = { patientId: "12345", diagnosis: "Common Cold" };
-const encrypted = await encryptData(JSON.stringify(record), "my-secret");
-
-chain.addBlock(new Block(1, Date.now(), encrypted));
-// Block mined: 0000a3f8...
-
-console.log(chain.isChainValid()); // true
-
-chain.chain[1].data = "tampered";
-console.log(chain.isChainValid()); // false
-```
-
-## Usage
-
-**Prerequisites:** Node.js or [Bun](https://bun.sh/)
+**`src/myBlockchain/blockchainTest.js`** — Creates a blockchain, mines one block with `{ amount: 4 }` data, prints whether the chain is valid, and dumps the full chain as JSON.
 
 ```bash
-npm install
-# or
-bun install
+node src/myBlockchain/blockchainTest.js
 ```
 
-**Run the demo:**
+## Tests
 
-```bash
-node blockchainTest.js
-```
+Tests are written with [Bun's built-in test runner](https://bun.sh/docs/cli/test).
 
-**Run the test suite (requires Bun):**
+| File | What it covers |
+|------|---------------|
+| `test/blockchain.test.js` | Hash calculation, mining to a target difficulty, genesis block creation, adding blocks, chain validation, and tamper detection (data and hash). |
+| `test/blockchain.73s7.js` | Alternative test suite for the same `Block`/`Blockchain` classes — covers `calculateHash`, `mineBlock`, `addBlock`, `isChainValid`, `createGenesisBlock`, and `getLatestBlock`. |
+| `test/cryptoUtils.test.js` | Encrypts a JSON patient record with `encryptData`, decrypts it with `decryptData`, and asserts the round-trip result matches the original. |
+
+### Run all tests
 
 ```bash
 bun test
 ```
 
-Tests cover hash calculation, proof-of-work mining, genesis block creation, block addition, chain validation, and tamper detection for both data and hash fields.
+### Run a single test file
 
-## Package manager
+```bash
+bun test test/blockchain.test.js
+bun test test/blockchain.73s7.js
+bun test test/cryptoUtils.test.js
+```
 
-- bun.lockb — keep this if you're running bun install / bun test
-- pnpm-lock.yaml — keep this if you're using pnpm
-- package-lock.json — keep this if you're using npm
+### Run tests matching a name pattern
+
+```bash
+bun test --test-name-pattern "should validate the chain"
+```
+
+## cryptoUtils.js
+
+Where'd it come from?
+
+My best guess: a tutorial or blog post about using blockchain for healthcare data — probably something like "building a secure blockchain for medical records with Node.js."
+
+The clues:
+
+- The medical record schema in the test (patientId, diagnosis, medication) matches that exact tutorial
+genre
+- The hardcoded salt "salt" and all-zero IV are hallmarks of simplified tutorial code — production crypto
+would never do that
+- The streaming cipher API (cipher.on("data"), cipher.on("end")) is a less common pattern; most tutorials
+that use it are specifically demonstrating Node's built-in crypto module rather than reaching for a
+library like sodium or node-forge
+- The aes-192-cbc choice is oddly specific — 192-bit is rarely used; 256 is the standard. That specificity
+ suggests it was copied from somewhere rather than written from scratch
+
+Could also have been AI-generated for the same kind of demo. Either way, the zero IV and static salt mean it's purely illustrative — not safe for real data.
+
+**Conclusion: I think it was AI-generated.**
 
 <br>
