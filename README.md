@@ -54,4 +54,10 @@ bun test
 
 Tests cover hash calculation, proof-of-work mining, genesis block creation, block addition, chain validation, and tamper detection for both data and hash fields.
 
+## Package manager
+
+- bun.lockb — keep this if you're running bun install / bun test
+- pnpm-lock.yaml — keep this if you're using pnpm
+- package-lock.json — keep this if you're using npm
+
 <br>
