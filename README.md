@@ -10,6 +10,7 @@ A JavaScript implementation of a blockchain with proof-of-work mining and AES-19
 |------|---------|
 | `src/blockchain.js` | Core `Block` and `Blockchain` classes with SHA-256 hashing, proof-of-work mining, and chain validation. Imported by the tests and demo scripts. |
 | `src/cryptoUtils.js` | AES-192-CBC `encryptData` and `decryptData` functions with password-derived keys via `scrypt`. Imported by tests. |
+| `src/cryptoUtils-1.js` | Improved version of `cryptoUtils.js`. Uses AES-256-GCM (authenticated encryption), a random salt, and a random IV generated fresh on every call. Bundles salt + IV + auth tag + ciphertext into a single hex string. Drop-in replacement with the same `encryptData` / `decryptData` interface. |
 | `src/myBlockchain/simpleBlockchain.js` | A self-contained copy of the `Block` and `Blockchain` classes (no external deps beyond Node's `crypto`). Used by `blockchainTest.js`. |
 
 ### Runnable scripts
