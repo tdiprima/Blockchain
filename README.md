@@ -52,7 +52,7 @@ bun test --test-name-pattern "should validate the chain"
 
 ## cryptoUtils.js
 
-Where'd it come from?
+Where'd it come from?  (This is from several years ago.)
 
 My best guess: a tutorial or blog post about using blockchain for healthcare data — probably something like "building a secure blockchain for medical records with Node.js."
 
