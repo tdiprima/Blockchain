@@ -70,6 +70,6 @@ library like sodium or node-forge
 
 Could also have been AI-generated for the same kind of demo. Either way, the zero IV and static salt mean it's purely illustrative — not safe for real data.
 
-**Conclusion: I think cryptoUtils.js was AI-generated.**
+**Conclusion: I believe cryptoUtils.js was AI-generated.**
 
 <br>
